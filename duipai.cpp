@@ -1,6 +1,5 @@
-#include <cstdlib>
-#include <filesystem>
-#include <iostream>
+#include <bits/stdc++.h>
+#define endl '\n'
 
 using namespace std;
 
@@ -19,8 +18,7 @@ int main() {
         return 1;
     }
 
-    int rp = 0;
-    while (!rp) {
+    while (1) {
         // 生成数据并存储在 input.txt 中
         if (system("data.exe > input.txt") != 0) {
             cerr << "Failed to execute data.exe" << endl;
@@ -39,12 +37,12 @@ int main() {
             return 1;
         }
 
-        // 进行对比
-        rp = system("fc fout.txt sout.txt");
-        if (rp == 0) {
-            cout << "AC" << endl;
+        // 比较两个文件的内容
+        if (system("fc fout.txt sout.txt > diff.txt") == 0) {
+            cout << "Accepted" << endl;
         } else {
-            cout << "WA" << endl;
+            cout << "Wrong Answer" << endl;
+            break;
         }
     }
 

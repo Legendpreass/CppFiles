@@ -1,0 +1,3 @@
+Comparing files fout.txt and SOUT.TXT
+FC: no differences encountered
+

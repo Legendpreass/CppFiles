@@ -85,11 +85,8 @@ signed main() {
     IOS;  // YOU USE IOS THEN YOU CAN'T USE READ() AND WRITE()
 
 #ifdef LOCAL
-    ifstream file("input.txt");
-    cin.rdbuf(file.rdbuf());
-
-    ofstream sout("sout.txt");
-    cout.rdbuf(sout.rdbuf());
+    freopen("input.txt", "r", stdin);
+    freopen("sout.txt", "w", stdout);
 #endif
 
     int t;
