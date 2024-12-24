@@ -84,21 +84,10 @@ void generateGraph(int n, int m) {  // 随机生成一张n个点m条边的无向
 signed main() {
     IOS;
     srand(time(0));
-    int t = 10;  // 生成10组测试数据
+    int t = random(30) + 1;
     cout << t << endl;
-    int n = random(178) + 3;
     while (t--) {
-        int x = random(11451411) - 19198103;
-        cout << n << endl;
-        // cout << x << " ";
-        for (int i = 1; i <= n; i++) {
-            int z = rand();
-            if (z % 2 == 0) {
-                cout << 1 << " ";
-            } else
-                cout << -1 << " ";
-        }
-        cout << endl;
+        
     }
     return 0;
 }

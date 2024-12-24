@@ -1,3 +1,3 @@
-Comparing files fout.txt and SOUT.TXT
-FC: no differences encountered
+正在比较文件 fout.txt 和 SOUT.TXT
+FC: 找不到差异
 
