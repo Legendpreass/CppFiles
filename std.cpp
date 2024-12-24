@@ -16,6 +16,7 @@
 
 #include <bits/stdc++.h>
 using namespace std;
+
 #define int          long long
 #define ULL          unsigned long long
 #define LD           long double
@@ -24,8 +25,9 @@ using namespace std;
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
 #define pb           push_back
-#define X            first
-#define Y            second
+#define lb           lower_bound
+#define fi           first
+#define se           second
 #define all(v)       (v).begin(), (v).end()
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)
@@ -52,7 +54,6 @@ using namespace std;
 //     putchar('\n');
 // }
 
-// use unordered_map<int, int, custom_hash> mp;
 class custom_hash {
     static uint64_t splitmix64(uint64_t x) {
         x += 0x9e3779b97f4a7c15;
@@ -72,7 +73,7 @@ class custom_hash {
 // senpai! kore dekiru kana?
 // omoshiroi desu ne!
 
-// 励志红名的大一蒟蒻ToT          现在codeforces分数:1185
+// 励志红名的大一蒟蒻ToT
 
 void senpaiSolve() {
     // BRO REMEMBER TO CHECK THE MOD VALUE
