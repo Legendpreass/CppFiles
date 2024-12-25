@@ -16,6 +16,7 @@
 
 #include <bits/stdc++.h>
 using namespace std;
+
 #define int          long long
 #define ULL          unsigned long long
 #define LD           long double
@@ -24,8 +25,9 @@ using namespace std;
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
 #define pb           push_back
-#define X            first
-#define Y            second
+#define lb           lower_bound
+#define fi           first
+#define se           second
 #define all(v)       (v).begin(), (v).end()
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)

@@ -16,6 +16,7 @@
 
 #include <bits/stdc++.h>
 using namespace std;
+
 #define int          long long
 #define ULL          unsigned long long
 #define LD           long double
@@ -24,8 +25,9 @@ using namespace std;
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
 #define pb           push_back
-#define X            first
-#define Y            second
+#define lb           lower_bound
+#define fi           first
+#define se           second
 #define all(v)       (v).begin(), (v).end()
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)
@@ -72,6 +74,43 @@ vector<int> manacher(const string &s) {
     }
     return p;
 }
+
+vector<string> duval(const string &s) {
+    int n = s.size();
+    vector<string> res;
+    for (int i = 0; i < n; i++) {
+        int l = i;
+        while (i + 1 < n && s[i] <= s[i + 1]) i++;
+        int r = i;
+        while (l <= r) {
+            res.push_back(s.substr(l, r - l + 1));
+            r--;
+        }
+    }
+    return res;
+}
+
+vector<string> lyndon(const string &s) {
+    int n = s.size();
+    vector<string> res;
+    for (int i = 0; i < n; i++) {
+        int j = i, k = i + 1;
+        while (k < n && s[j] <= s[k]) {
+            if (s[j] < s[k]) j = i;
+            else j++;
+            k++;
+        }
+        while (i <= j) {
+            res.push_back(s.substr(i, k - j));
+            j--;
+        }
+        i = k - 1;
+    }
+    return res;
+}
+// actually, the lyndon decomposition is the same as the duval decomposition
+// the difference is that the lyndon decomposition is in lexicographically increasing order
+// and the duval decomposition is in lexicographically decreasing order
 
 class Hash {
 private:
@@ -162,5 +201,57 @@ public:
             }
         }
         return res;
+    }
+};
+
+class SuffixArray {
+private:
+    static const int MAXN = 1e6 + 5;
+    static const int MAXM = 256;
+    int n, m, sa[MAXN], rk[MAXN], oldrk[MAXN], id[MAXN], cnt[MAXN];
+    bool cmp(int *t, int a, int b, int l) {
+        return t[a] == t[b] && t[a + l] == t[b + l];
+    }
+    void build(int *s) {
+        n++;
+        int *x = oldrk, *y = rk;
+        m = MAXM;
+        fill(cnt, cnt + MAXM, 0);
+        for (int i = 0; i < n; i++) cnt[x[i] = s[i]]++;
+        for (int i = 1; i < m; i++) cnt[i] += cnt[i - 1];
+        for (int i = n - 1; i >= 0; i--) sa[--cnt[x[i]]] = i;
+        for (int len = 1, p = 1; p < n; len <<= 1, m = p) {
+            p = 0;
+            for (int i = n - len; i < n; i++) y[p++] = i;
+            for (int i = 0; i < n; i++) if (sa[i] >= len) y[p++] = sa[i] - len;
+            fill(cnt, cnt + m, 0);
+            for (int i = 0; i < n; i++) cnt[x[y[i]]]++;
+            for (int i = 1; i < m; i++) cnt[i] += cnt[i - 1];
+            for (int i = n - 1; i >= 0; i--) sa[--cnt[x[y[i]]]] = y[i];
+            swap(x, y), p = 1, x[sa[0]] = 0;
+            for (int i = 1; i < n; i++) x[sa[i]] = cmp(y, sa[i], sa[i - 1], len) ? p - 1 : p++;
+        }
+        n--;
+    }
+public:
+    void init(const string &s) {
+        n = s.size();
+        int *t = new int[n + 3];
+        for (int i = 0; i < n; i++) t[i] = s[i];
+        build(t);
+        for (int i = 0; i <= n; i++) rk[sa[i]] = i;
+        int k = 0;
+        for (int i = 0; i < n; i++) {
+            if (k) k--;
+            int j = sa[rk[i] - 1];
+            while (s[i + k] == s[j + k]) k++;
+            id[rk[i]] = k;
+        }
+        delete[] t;
+    }
+    int lcp(int x, int y) {
+        x = rk[x], y = rk[y];
+        if (x > y) swap(x, y);
+        return *min_element(id + x + 1, id + y + 1);
     }
 };

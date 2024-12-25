@@ -75,6 +75,8 @@ class custom_hash {
 
 // 励志红名的大一蒟蒻ToT
 
+#define MULTI
+
 void senpaiSolve() {
     // BRO REMEMBER TO CHECK THE MOD VALUE
     // BRO I SET INT TO LONG LONG SO YOU CAN'T HACK ME BY USING HUGE NUMBER :D
@@ -89,16 +91,17 @@ signed main() {
     freopen("sout.txt", "w", stdout);
 #endif
 
+#ifdef MULTI
     int t;
     cin >> t;
     clock_t c1 = clock();
     while (t--) {
         senpaiSolve();
     }
-
-    // clock_t c1 = clock();
-    // senpaiSolve();
-
+#else
+    clock_t c1 = clock();
+    senpaiSolve();
+#endif
 end:
     cerr << "Time used: " << clock() - c1 << "ms" << endl;
     return 0;

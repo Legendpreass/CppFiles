@@ -16,6 +16,7 @@
 
 #include <bits/stdc++.h>
 using namespace std;
+
 #define int          long long
 #define ULL          unsigned long long
 #define LD           long double
@@ -24,8 +25,9 @@ using namespace std;
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
 #define pb           push_back
-#define X            first
-#define Y            second
+#define lb           lower_bound
+#define fi           first
+#define se           second
 #define all(v)       (v).begin(), (v).end()
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)
@@ -67,9 +69,7 @@ static inline int Cmn(int n, int m) {
     return res;
 }
 
-inline int getInv(int x) {
-    return qpow(x, MOD - 2);
-}
+inline int getInv(int x) { return qpow(x, MOD - 2); }
 
 static void exgcd(int a, int b, int &x, int &y) {
     if (!b) {
@@ -81,139 +81,365 @@ static void exgcd(int a, int b, int &x, int &y) {
     y -= a / b * x;
 }
 
-class BigInt {
-private:
-    static const int BASE = 1000000000; // 10^9
-    static const int WIDTH = 9;
-    vector<int> s;
-    static const double PI = 3.1415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679;
-
-    struct Complex {
-        double real, imag;
-        Complex(double r = 0, double i = 0) : real(r), imag(i) {}
-        Complex operator+(const Complex &b) const { return Complex(real + b.real, imag + b.imag); }
-        Complex operator-(const Complex &b) const { return Complex(real - b.real, imag - b.imag); }
-        Complex operator*(const Complex &b) const { return Complex(real * b.real - imag * b.imag, real * b.imag + imag * b.real); }
-    };
-
-    static void FFT(vector<Complex> &a, int n, int invert) {
-        for (int i = 1, j = 0; i < n; ++i) {
-            int bit = n >> 1;
-            for (; j & bit; bit >>= 1) j ^= bit;
-            j ^= bit;
-            if (i < j) swap(a[i], a[j]);
+static vector<int> getPrimes(int n) {
+    vector<int> primes;
+    vector<bool> isPrime(n + 1, true);
+    isPrime[0] = isPrime[1] = false;
+    for (int i = 2; i <= n; i++) {
+        if (isPrime[i]) primes.push_back(i);
+        for (int j = 0; j < primes.size() && i * primes[j] <= n; j++) {
+            isPrime[i * primes[j]] = false;
+            if (i % primes[j] == 0) break;
         }
-        for (int len = 2; len <= n; len <<= 1) {
-            double angle = 2 * PI / len * (invert ? -1 : 1);
-            Complex wlen(cos(angle), sin(angle));
-            for (int i = 0; i < n; i += len) {
-                Complex w(1);
-                for (int j = 0; j < len / 2; ++j) {
-                    Complex u = a[i + j], v = a[i + j + len / 2] * w;
-                    a[i + j] = u + v;
-                    a[i + j + len / 2] = u - v;
-                    w = w * wlen;
+    }
+    return primes;
+}
+
+class BigInt10 : public vector<int> {
+    static inline constexpr int g = 11, M = 754974721;
+    static inline vector<int> rev, roots{0, 1};
+    static int powMod(int x, int n) {
+        int r(1);
+        while (n) {
+            if (n & 1) r = 1LL * r * x % M;
+            n >>= 1;
+            x = 1LL * x * x % M;
+        }
+        return r;
+    }
+    void dft() {
+        int n = size();
+        if ((int)rev.size() != n) {
+            int k = __builtin_ctz(n) - 1;
+            rev.resize(n);
+            for (int i = 0; i < n; ++i) {
+                rev[i] = rev[i >> 1] >> 1 | (i & 1) << k;
+            }
+        }
+        if ((int)roots.size() < n) {
+            int k = __builtin_ctz(roots.size());
+            roots.resize(n);
+            while ((1 << k) < n) {
+                int e = powMod(g, (M - 1) >> (k + 1));
+                for (int i = 1 << (k - 1); i < (1 << k); ++i) {
+                    roots[2 * i] = roots[i];
+                    roots[2 * i + 1] = 1LL * roots[i] * e % M;
+                }
+                ++k;
+            }
+        }
+        for (int i = 0; i < n; ++i)
+            if (rev[i] < i) {
+                std::swap((*this)[i], (*this)[rev[i]]);
+            }
+        for (int k = 1; k < n; k *= 2) {
+            for (int i = 0; i < n; i += 2 * k) {
+                for (int j = 0; j < k; ++j) {
+                    int u = (*this)[i + j];
+                    int v = 1LL * (*this)[i + j + k] * roots[k + j] % M;
+                    int x = u + v, y = u - v;
+                    if (x >= M) x -= M;
+                    if (y < 0) y += M;
+                    (*this)[i + j] = x;
+                    (*this)[i + j + k] = y;
                 }
             }
         }
-        if (invert) {
-            for (Complex &x : a) x.real /= n;
+    }
+    void idft() {
+        int n = size();
+        std::reverse(begin() + 1, end());
+        dft();
+        int inv = powMod(n, M - 2);
+        for (int i = 0; i < n; ++i) {
+            (*this)[i] = 1LL * (*this)[i] * inv % M;
         }
     }
 
-    vector<int> multiply(const vector<int> &a, const vector<int> &b) const {
-        vector<Complex> fa(a.begin(), a.end()), fb(b.begin(), b.end());
-        int n = 1;
-        while (n < a.size() + b.size()) n <<= 1;
-        fa.resize(n);
-        fb.resize(n);
-
-        FFT(fa, n, 0);
-        FFT(fb, n, 0);
-        for (int i = 0; i < n; ++i) fa[i] = fa[i] * fb[i];
-        FFT(fa, n, 1);
-
-        vector<int> result(n);
-        for (int i = 0; i < n; ++i) result[i] = round(fa[i].real);
-        return result;
-    }
 public:
-    BigInt(long long num = 0) { *this = num; }
-    BigInt(const string &str) { *this = str; }
-
-    BigInt& operator=(long long num) {
-        s.clear();
-        do {
-            s.push_back(num % BASE);
-            num /= BASE;
-        } while (num > 0);
-        return *this;
-    }
-
-    BigInt& operator=(const string &str) {
-        s.clear();
-        int len = (str.length() - 1) / WIDTH + 1;
-        for (int i = 0; i < len; i++) {
-            int end = str.length() - i * WIDTH;
-            int start = max(0LL, end - WIDTH);
-            s.push_back(stoi(str.substr(start, end - start)));
+    // The above are used for NTT
+    bool ngt;
+    using std::vector<int>::vector;  // this will not init ngt
+    BigInt10(const std::vector<int> &a, bool _ngt) : std::vector<int>::vector{a}, ngt(_ngt) {}
+    template <typename Iterator>
+    BigInt10(Iterator first, Iterator last) : std::vector<int>(first, last), ngt(false) {}
+    BigInt10(const std::string &s) {
+        ngt = false;
+        int i = 0, n = s.size();
+        while (i < n && (s[i] < '0' || s[i] > '9')) {
+            if (s[i] == '-') ngt = true;
+            ++i;
         }
-        return *this;
-    }
-
-    BigInt operator+(const BigInt &b) const {
-        BigInt c;
-        c.s.clear();
-        for (int i = 0, g = 0; ; i++) {
-            if (g == 0 && i >= s.size() && i >= b.s.size()) break;
-            int x = g;
-            if (i < s.size()) x += s[i];
-            if (i < b.s.size()) x += b.s[i];
-            c.s.push_back(x % BASE);
-            g = x / BASE;
+        while (i < n && s[i] >= '0' && s[i] <= '9') {
+            emplace_back(s[i] - '0');
+            ++i;
         }
-        return c;
+        reverse();
     }
-
-    BigInt operator-(const BigInt &b) const {
-        BigInt c;
-        c.s.clear();
-        for (int i = 0, g = 0; ; i++) {
-            if (i >= s.size()) break;
-            int x = s[i] - g;
-            if (i < b.s.size()) x -= b.s[i];
-            if (x < 0) {
-                g = 1;
-                x += BASE;
+    BigInt10(const BigInt10 &other) : std::vector<int>(other), ngt(other.ngt) {}
+    BigInt10() { ngt = false; }
+    BigInt10(const int &x) {
+        ngt = (x < 0);
+        if (x == 0) return;
+        emplace_back(abs(x));
+        standard();
+    }
+    BigInt10(const long long &x) {
+        ngt = (x < 0);
+        if (x == 0) return;
+        auto now = abs(x);
+        while (now) {
+            auto tmp = now / 10;
+            emplace_back(now - tmp * 10);
+            now = tmp;
+        }
+    }
+    std::string toString() const {
+        if (empty()) return "0";
+        std::string s;
+        for (auto x : (*this)) s += char(x + '0');
+        if (ngt) s += '-';
+        std::reverse(s.begin(), s.end());
+        return s;
+    }
+    friend std::istream &operator>>(std::istream &in, BigInt10 &A) {
+        string s;
+        in >> s;
+        A = BigInt10(s);
+        return in;
+    }
+    friend std::ostream &operator<<(std::ostream &out, const BigInt10 &A) {
+        out << A.toString();
+        return out;
+    }
+    // postive zero is the same as negetive zero
+    void opposite() {
+        if (!empty()) ngt = !ngt;
+    }
+    void negtive() {
+        if (!empty()) ngt = true;
+    }
+    void positive() { ngt = false; }
+    // left and right shift
+    BigInt10 mulXn(int n) const {
+        auto A = *this;
+        if (!A.empty()) A.insert(A.begin(), n, 0);
+        return A;
+    }
+    BigInt10 modXn(int n) const {
+        if (n >= (int)size()) return *this;
+        return BigInt10({begin(), begin() + n}, ngt);
+    }
+    BigInt10 divXn(int n) const {
+        if ((int)size() <= n) return BigInt10();
+        return BigInt10({begin() + n, end()}, ngt);
+    }
+    bool operator<(const BigInt10 &B) const {
+        if (ngt) {
+            if (B.ngt) return absCompare(B, *this);
+            return true;
+        }
+        if (B.ngt) return false;
+        return absCompare(*this, B);
+    }
+    bool operator<=(const BigInt10 &B) const {
+        if (ngt) {
+            if (B.ngt) return absCompareEqual(B, *this);
+            return true;
+        }
+        if (B.ngt) return false;
+        return absCompareEqual(*this, B);
+    }
+    BigInt10 &operator+=(const BigInt10 &B) {
+        bool flag = ngt;
+        if (ngt == B.ngt) {
+            *this = add(*this, B);
+        } else {
+            if (absCompare(*this, B)) {
+                flag = B.ngt;
+                *this = sub(B, *this);
             } else {
-                g = 0;
+                *this = sub(*this, B);
             }
-            c.s.push_back(x);
         }
-        while (c.s.size() > 1 && c.s.back() == 0) c.s.pop_back();
-        return c;
+        this->ngt = flag;
+        return (*this);
+    }
+    BigInt10 &operator-=(const BigInt10 &B) {
+        bool flag = ngt;
+        if (ngt == B.ngt) {
+            if (absCompare(*this, B)) {
+                flag = !ngt;
+                *this = sub(B, *this);
+            } else {
+                *this = sub(*this, B);
+            }
+        } else {
+            *this = add(*this, B);
+        }
+        this->ngt = flag;
+        return (*this);
+    }
+    BigInt10 operator+(const BigInt10 &B) const { return BigInt10(*this) += B; }
+    BigInt10 operator-(const BigInt10 &B) const { return BigInt10(*this) -= B; }
+    BigInt10 &operator*=(BigInt10 rhs) { return *this = mul(*this, rhs); }
+    BigInt10 operator*(const BigInt10 &rhs) const { return mul(*this, rhs); }
+    BigInt10 &operator/=(BigInt10 rhs) { return *this = div(*this, rhs); }
+    BigInt10 operator/(BigInt10 rhs) const { return div(*this, rhs); }
+    BigInt10 &operator%=(BigInt10 rhs) { return (*this) -= (*this) / rhs * rhs; }
+    BigInt10 operator%(BigInt10 rhs) const { return BigInt10(*this) %= rhs; }
+    BigInt10 &operator++() {
+        if (empty()) return (*this) = BigInt10(1);
+        if (ngt)
+            prefixDecrement();
+        else
+            prefixIncrement();
+        return (*this);
+    }
+    BigInt10 &operator--() {
+        if (empty()) return (*this) = BigInt10(-1);
+        if (ngt)
+            prefixIncrement();
+        else
+            prefixDecrement();
+        return (*this);
     }
 
-    BigInt operator*(const BigInt &b) const {
-        vector<int> a1, b1;
-        for (int x : s) a1.push_back(x);
-        for (int x : b.s) b1.push_back(x);
-        vector<int> c = multiply(a1, b1);
-        BigInt res;
-        res.s.clear();
-        long long carry = 0;
-        for (int i = 0; i < c.size(); i++) {
-            carry += c[i];
-            res.s.push_back(carry % BASE);
-            carry /= BASE;
-        }
-        while (res.s.size() > 1 && res.s.back() == 0) res.s.pop_back();
-        return res;
+private:
+    void prefixIncrement() {
+        int n = this->size(), i = 0;
+        while (i < n && (*this)[i] == 9) ++i;
+        if (i == this->size())
+            emplace_back(1);
+        else
+            ++((*this)[i]);
+        std::fill(begin(), begin() + i, 0);
     }
-
-    void print() const {
-        printf("%d", s.back());
-        for (int i = s.size() - 2; i >= 0; i--) printf("%09d", s[i]);
-        printf("\n");
+    void prefixDecrement() {
+        int n = this->size(), i = 0;
+        while (i < n && (*this)[i] == 0) ++i;
+        --((*this)[i]);
+        std::fill(begin(), begin() + i, 9);
+        if (back() == 0) pop_back();
+    }
+    void removeLeadingZero() {
+        while (!empty() && back() == 0) pop_back();
+        if (empty()) ngt = false;
+    }
+    void standard() {
+        int now = 0;  // claim that now < 2M
+        for (auto &x : *this) {
+            now += x;
+            auto tmp = now / 10;
+            x = now - tmp * 10;
+            now = tmp;
+        }
+        while (now) {
+            auto tmp = now / 10;
+            emplace_back(now - tmp * 10);
+            now = tmp;
+        }
+        removeLeadingZero();
+    }
+    void reverse() {
+        std::reverse(begin(), end());
+        removeLeadingZero();
+    }
+    friend bool absCompare(const BigInt10 &A, const BigInt10 &B) {
+        if (A.size() < B.size()) return true;
+        if (A.size() > B.size()) return false;
+        for (int i = A.size() - 1; i >= 0; --i) {
+            if (A[i] != B[i]) return A[i] < B[i];
+        }
+        return false;
+    }
+    friend BigInt10 abs(const BigInt10 &A) {
+        auto B = A;
+        B.ngt = false;
+        return B;
+    }
+    friend bool absCompareEqual(const BigInt10 &A, const BigInt10 &B) {
+        if (A.size() < B.size()) return true;
+        if (A.size() > B.size()) return false;
+        for (int i = A.size() - 1; i >= 0; --i) {
+            if (A[i] != B[i]) return A[i] < B[i];
+        }
+        return true;
+    }
+    // unsigned add
+    friend BigInt10 add(const BigInt10 &A, const BigInt10 &B) {
+        BigInt10 C(A);
+        C.resize(std::max(A.size(), B.size()));
+        for (int i = 0, nb = B.size(); i < nb; ++i) C[i] += B[i];
+        C.standard();
+        return C;
+    }
+    // unsigned sub: assume A >= B
+    friend BigInt10 sub(const BigInt10 &A, const BigInt10 &B) {
+        BigInt10 C(A);
+        for (int i = C.size() - 1; i > 0; --i) {
+            --C[i];
+            C[i - 1] += 10;
+        }
+        for (int i = 0, nb = B.size(); i < nb; ++i) C[i] -= B[i];
+        C.standard();
+        return C;
+    }
+    friend BigInt10 mul(BigInt10 A, BigInt10 B) {
+        if (A.empty() || B.empty()) return BigInt10(0);
+        bool flag = A.ngt ^ B.ngt;
+        int n = A.size(), m = B.size(), tot = std::max(1LL, n + m - 1);
+        int sz = 1 << std::__lg(tot * 2 - 1);
+        A.resize(sz);
+        B.resize(sz);
+        A.dft();
+        B.dft();
+        for (int i = 0; i < sz; ++i) {
+            A[i] = 1LL * A[i] * B[i] % M;
+        }
+        A.idft();
+        A.ngt = flag;
+        A.standard();
+        return A;
+    }
+    friend BigInt10 inv(const BigInt10 &A) {
+        int n = A.size();
+        // if (n == 1) return BigInt10(100 / A[0]); // this case will be deal in div
+        if (n == 2) return BigInt10(10000 / (A[0] + A[1] * 10));
+        int k = n / 2 + 1;
+        BigInt10 B = inv(BigInt10(A.end() - k, A.end()));
+        B = sub(add(B, B).mulXn(n - k), mul(mul(A, B), B).divXn(2 * k));
+        return B;
+    }
+    friend BigInt10 div(BigInt10 A, BigInt10 B) {
+        assert(!B.empty());  // div by zero
+        bool flag = A.ngt ^ B.ngt;
+        if (absCompare(A, B)) return BigInt10(0);
+        int n = A.size(), m = B.size();
+        if (n > 2 * m) {
+            A = A.mulXn(n - m * 2);
+            B = B.mulXn(n - m * 2);
+            m = n - m;
+            n = m * 2;
+        }
+        if (B.size() == 1) return (A[0] + (A.size() == 1 ? 0 : A[1] * 10)) / B[0];
+        BigInt10 D = inv(B), ans(0), DB = mul(D, B);
+        if (DB.size() >= 2 * m) {  // actually at most once
+            DB -= B;
+            if (D[0] == 0)
+                D = sub(D, 1);
+            else
+                --D[0];
+        }
+        while (absCompareEqual(B, A)) {
+            auto C = mul(A, D).divXn(2 * m);
+            if (C.empty()) break;
+            ans = add(ans, C);
+            A = sub(A, mul(B, C));
+        }
+        while (absCompareEqual(B, A)) A = sub(A, B), ++ans[0];
+        ans.ngt = flag;
+        ans.standard();
+        return ans;
     }
 };
