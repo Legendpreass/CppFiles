@@ -21,6 +21,7 @@ using namespace std;
 #define ULL          unsigned long long
 #define LD           long double
 #define PII          pair<int, int>
+#define VI           vector<int>
 #define EPS          1e-7
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
@@ -76,6 +77,7 @@ class custom_hash {
 // 励志红名的大一蒟蒻ToT
 
 #define MULTI
+const int N = 100005;
 
 void senpaiSolve() {
     // BRO REMEMBER TO CHECK THE MOD VALUE
@@ -91,6 +93,7 @@ signed main() {
     freopen("sout.txt", "w", stdout);
 #endif
 
+    cout << fixed << setprecision(20);
 #ifdef MULTI
     int t;
     cin >> t;

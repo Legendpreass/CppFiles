@@ -115,6 +115,7 @@ private:
         root = merge(merge(a, b), c);
         return res;
     }
+
 public:
     Treap() : root(nullptr) {}
     void insert(int k, int val) { insert(k, val); }
@@ -139,57 +140,85 @@ public:
     }
 };
 
-class LazySegmenTree {
+class SegmentTree {
 private:
-    vector<int> sum, tag;
+    vector<int> tree;
+    vector<int> lazy;
     int n;
-    inline void pushup(int rt) { sum[rt] = sum[rt << 1] + sum[rt << 1 | 1]; }
-    inline void pushdown(int rt, int l, int r) {
-        if (tag[rt]) {
-            int mid = (l + r) >> 1;
-            sum[rt << 1] += tag[rt] * (mid - l + 1);
-            sum[rt << 1 | 1] += tag[rt] * (r - mid);
-            tag[rt << 1] += tag[rt];
-            tag[rt << 1 | 1] += tag[rt];
-            tag[rt] = 0;
+
+    void build(const vector<int> &arr, int node, int start, int end) {
+        if (start == end) {
+            tree[node] = arr[start];
+        } else {
+            int mid = (start + end) / 2;
+            build(arr, 2 * node + 1, start, mid);
+            build(arr, 2 * node + 2, mid + 1, end);
+            tree[node] = max(tree[2 * node + 1], tree[2 * node + 2]);
         }
     }
 
+    void propagate(int node, int start, int end) {
+        if (lazy[node] != 0) {
+            tree[node] += lazy[node];
+            if (start != end) {
+                lazy[2 * node + 1] += lazy[node];
+                lazy[2 * node + 2] += lazy[node];
+            }
+            lazy[node] = 0;
+        }
+    }
+
+    void updateRange(int node, int start, int end, int l, int r, int value) {
+        propagate(node, start, end);
+
+        if (start > end || start > r || end < l) {
+            return;
+        }
+
+        if (start >= l && end <= r) {
+            tree[node] += value;
+            if (start != end) {
+                lazy[2 * node + 1] += value;
+                lazy[2 * node + 2] += value;
+            }
+            return;
+        }
+
+        int mid = (start + end) / 2;
+        updateRange(2 * node + 1, start, mid, l, r, value);
+        updateRange(2 * node + 2, mid + 1, end, l, r, value);
+        tree[node] = max(tree[2 * node + 1], tree[2 * node + 2]);
+    }
+
+    // 查询区间最大值
+    int queryRange(int node, int start, int end, int l, int r) {
+        propagate(node, start, end);
+
+        if (start > end || start > r || end < l) {
+            return INT_MIN;
+        }
+
+        if (start >= l && end <= r) {
+            return tree[node];
+        }
+
+        int mid = (start + end) / 2;
+        int left_query = queryRange(2 * node + 1, start, mid, l, r);
+        int right_query = queryRange(2 * node + 2, mid + 1, end, l, r);
+        return max(left_query, right_query);
+    }
+
 public:
-    LazySegmenTree(int n) : n(n) {
-        sum.resize(n << 2);
-        tag.resize(n << 2);
+    SegmentTree(const vector<int> &arr) {
+        n = arr.size();
+        tree.resize(4 * n);
+        lazy.resize(4 * n, 0);
+        build(arr, 0, 0, n - 1);
     }
-    void build(int rt, int l, int r, vector<int> &a) {
-        if (l == r) {
-            sum[rt] = a[l];
-            return;
-        }
-        int mid = (l + r) >> 1;
-        build(rt << 1, l, mid, a);
-        build(rt << 1 | 1, mid + 1, r, a);
-        pushup(rt);
-    }
-    void update(int rt, int l, int r, int L, int R, int val) {
-        if (l >= L && r <= R) {
-            sum[rt] += val * (r - l + 1);
-            tag[rt] += val;
-            return;
-        }
-        pushdown(rt, l, r);
-        int mid = (l + r) >> 1;
-        if (mid >= L) update(rt << 1, l, mid, L, R, val);
-        if (mid < R) update(rt << 1 | 1, mid + 1, r, L, R, val);
-        pushup(rt);
-    }
-    int query(int rt, int l, int r, int L, int R) {
-        if (l >= L && r <= R) return sum[rt];
-        pushdown(rt, l, r);
-        int mid = (l + r) >> 1, res = 0;
-        if (mid >= L) res += query(rt << 1, l, mid, L, R);
-        if (mid < R) res += query(rt << 1 | 1, mid + 1, r, L, R);
-        return res;
-    }
+
+    void update(int l, int r, int value) { updateRange(0, 0, n - 1, l, r, value); }
+
+    int query(int l, int r) { return queryRange(0, 0, n - 1, l, r); }
 };
 
 class DynamicSegmenTree {
@@ -271,10 +300,11 @@ private:
         clear(o->rc);
         delete o;
     }
+
 public:
     HJTSegmenTree() { root.push_back(new Node(1, 1e9)); }
     ~HJTSegmenTree() {
-        for (Node* r : root) {
+        for (Node *r : root) {
             clear(r);
         }
     }

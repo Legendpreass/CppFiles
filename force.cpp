@@ -21,6 +21,7 @@ using namespace std;
 #define ULL          unsigned long long
 #define LD           long double
 #define PII          pair<int, int>
+#define VI           vector<int>
 #define EPS          1e-7
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
@@ -29,6 +30,7 @@ using namespace std;
 #define fi           first
 #define se           second
 #define all(v)       (v).begin(), (v).end()
+#define rep(n)       for (int i = 0; i < n; i++)
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)
 #define MOD          998244353
@@ -76,11 +78,11 @@ class custom_hash {
 // 励志红名的大一蒟蒻ToT
 
 #define MULTI
+const int N = 100005;
 
 void senpaiSolve() {
     // BRO REMEMBER TO CHECK THE MOD VALUE
     // BRO I SET INT TO LONG LONG SO YOU CAN'T HACK ME BY USING HUGE NUMBER :D
-    
 }
 
 signed main() {
@@ -91,6 +93,7 @@ signed main() {
     freopen("fout.txt", "w", stdout);
 #endif
 
+    cout << fixed << setprecision(20);
 #ifdef MULTI
     int t;
     cin >> t;
