@@ -115,7 +115,6 @@ private:
         root = merge(merge(a, b), c);
         return res;
     }
-
 public:
     Treap() : root(nullptr) {}
     void insert(int k, int val) { insert(k, val); }
@@ -146,7 +145,7 @@ private:
     vector<int> lazy;
     int n;
 
-    void build(const vector<int> &arr, int node, int start, int end) {
+    void build(const vector<int>& arr, int node, int start, int end) {
         if (start == end) {
             tree[node] = arr[start];
         } else {
@@ -209,7 +208,7 @@ private:
     }
 
 public:
-    SegmentTree(const vector<int> &arr) {
+    SegmentTree(const vector<int>& arr) {
         n = arr.size();
         tree.resize(4 * n);
         lazy.resize(4 * n, 0);
@@ -300,11 +299,10 @@ private:
         clear(o->rc);
         delete o;
     }
-
 public:
     HJTSegmenTree() { root.push_back(new Node(1, 1e9)); }
     ~HJTSegmenTree() {
-        for (Node *r : root) {
+        for (Node* r : root) {
             clear(r);
         }
     }

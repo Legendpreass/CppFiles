@@ -1,3 +1,0 @@
-正在比较文件 fout.txt 和 SOUT.TXT
-FC: 找不到差异
-

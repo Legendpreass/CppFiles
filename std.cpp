@@ -21,7 +21,6 @@ using namespace std;
 #define ULL          unsigned long long
 #define LD           long double
 #define PII          pair<int, int>
-#define VI           vector<int>
 #define EPS          1e-7
 #define lowbit(x)    (x & -x)
 #define mp           make_pair
@@ -32,12 +31,23 @@ using namespace std;
 #define all(v)       (v).begin(), (v).end()
 #define rep(i, a, b) for (int i = a; i < b; i++)
 #define per(i, a, b) for (int i = a; i >= b; i--)
-#define MOD          998244353
 #define HASHMOD      1000000000000000003
 #define IOS          ios_base::sync_with_stdio(false), cin.tie(nullptr), cout.tie(nullptr)
 #define endl         '\n'
 
 //================================SOME TEMPLATES HERE================================//
+
+void flagPrint(bool flag) { cout << (flag ? "YES" : "NO") << endl; }
+void pairPrint(int a, int b) { cout << a << " " << b << endl; }
+void arrPrint(vector<int> vi) {
+    rep(i, 0, vi.size()) cout << vi[i] << " ";
+    cout << endl;
+}
+void arrPrint(vector<PII> vi) { rep(i, 0, vi.size()) cout << vi[i].fi << " " << vi[i].se << endl; }
+void setPrint(set<int> si) {
+    for (const auto x : si) cout << x << " ";
+    cout << endl;
+}
 
 // inline int read() {
 //     int re = 0, val = 1, c = getchar();
@@ -78,6 +88,7 @@ class custom_hash {
 
 #define MULTI
 const int N = 100005;
+const int MOD = 1e9 + 7;
 
 void senpaiSolve() {
     // BRO REMEMBER TO CHECK THE MOD VALUE
